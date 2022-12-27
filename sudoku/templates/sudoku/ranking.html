@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <style>
+        #main-flexbox{
+            display: flex;
+            flex-flow: column;
+            align-items: center;
+            height: 100%;
+        }
+
+        #content-flexbox{
+            display: flex;
+            width: 70%;
+            flex-flow: row;
+        }
+        #dummy-flexbox {
+            display: flex;
+            width: 15%;
+            flex-flow: column;
+        }
+
+        #button-flexbox{
+            display: flex;
+            width: 20%;
+            flex-flow: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        #main-flexbox {
+            margin-top: 1em;
+        }
+    </style>
+</head>
+<body>
+    <div id="main-flexbox">
+        <div id="nav-bar-flexbox">
+            <h3>WEB SUDOKU RANKING!</h3>
+        </div>
+        <div id="content-flexbox">
+            <div id="dummy-flexbox">
+            </div>
+            <table id="ranking-table" class="table">
+                <thead>
+                    <tr>
+                        <th>등수</th>
+                        <th>아이디</th>
+                        <th>경과 시간</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-list">
+                </tbody>
+            </table>
+            <div id="button-flexbox">
+                <a id="ranking-btn" class="btn btn-primary" role="button" href="/">메인 페이지</a>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        axios.get('/sudoku/ranking')
+        .then(get_sudoku_ranking);
+
+        function get_sudoku_ranking(response){
+            let ranking_data = response.data.data;
+            let ranking_list = document.querySelector("#ranking-list")
+            let count = 1;
+            ranking_data.forEach(element => {
+                let tr = document.createElement("tr");
+                let rankElement = document.createElement("td");
+                let userElement = document.createElement("td");
+                let timeElement = document.createElement("td");
+
+                rankElement.innerText = count.toString();
+                userElement.innerText = element.name;
+                timeElement.innerText = element.elapsed_time;
+                tr.appendChild(rankElement);
+                tr.appendChild(userElement);
+                tr.appendChild(timeElement);
+                ranking_list.appendChild(tr);
+                count += 1;
+            });
+        }
+    </script>
+</body>

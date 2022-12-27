@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <style>
+        .gridbox-container {
+          display: grid;
+          grid-template-columns: repeat(9, 3em);
+        }
+
+        .gridbox-item {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 1);
+            padding: 1em;
+            font-size: 1em;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .input-item-decorator {
+            color: rgba(136,137,220,1);
+        }
+
+        .fixed-item-decorator {
+            color: rgba(0,0,0,1);
+        }
+
+        .cell-padding-left {
+            margin-left: 0.2em;
+        }
+
+        .cell-padding-bottom {
+            margin-bottom: 0.2em;
+        }
+
+        #main-flexbox{
+            display: flex;
+            flex-flow: column;
+            align-items: center;
+            height: 100%;
+        }
+
+        #content-flexbox{
+            display: flex;
+            flex: 1;
+            width: 100%;
+            flex-flow: row;
+        }
+
+        #dummy-flexbox {
+            display: flex;
+            flex: 2;
+            flex-flow: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #sudoku-flexbox {
+            flex: 4;
+            flex-flow: row;
+            height: 100%;
+        }
+
+        #sudoku-flexbox > .gridbox-container{
+            justify-content: center;
+        }
+
+        #button-flexbox {
+            display: flex;
+            flex: 2;
+            flex-flow: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited, .btn-primary:focus {
+            width: 8em;
+            background-color: rgba(200, 177, 232, 1);
+            border-color: rgba(200, 177, 232, 1);
+        }
+
+        #submit-btn {
+            margin-bottom: 2em;
+        }
+
+        #ranking-btn {
+            margin-top: 1em;
+            margin-bottom: 1em;
+        }
+
+        #ranking-submit {
+            margin-bottom: 2em;
+        }
+
+        #main-flexbox {
+            margin-top: 1em;
+        }
+
+        #nav-bar-flexbox {
+            margin-bottom: 1em;
+        }
+
+        #fail-toast {
+            position: relative;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="main-flexbox">
+        <div id="nav-bar-flexbox">
+            <h3>WEB SUDOKU!</h3>
+        </div>
+        <div id="content-flexbox">
+            <div id="dummy-flexbox"></div>
+            <div id="sudoku-flexbox">
+                <div class="gridbox-container">
+                </div>
+            </div>
+            <div id="button-flexbox">
+                <div>
+                    <a id="submit-btn" class="btn btn-primary" role="button">SUBMIT</a>
+                </div>
+                <div>
+                    <a id="ranking-btn" class="btn btn-primary" role="button" href="ranking">랭킹 페이지</a>
+                </div>
+                <div id="timer-box">
+                    <h3>00:00:00</h3>
+                </div>
+            </div>
+        </div>
+        <div id="fail-toast-container" style="position: absolute; top: 40%;">
+            <div id="fail-toast" class="toast">
+                <div class="toast-header">
+                    <strong class="mr-auto text-danger">제출한 답안이 틀렸습니다!</strong>
+                </div>
+                <div class="toast-body text-danger">
+                    제출한 답안이 틀렸습니다!
+                </div>
+            </div>
+        </div>
+
+        <div id="success-toast-container" style="position: absolute; top: 40%;">
+            <div id="success-toast" class="toast" data-autohide="false">
+                <div class="toast-header">
+                    <strong class="mr-auto text-primary">축하합니다 랭킹 등록 하시죠!</strong>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
+                </div>
+                <div class="toast-body text-danger">
+                    <div>
+                        <strong class="mr-auto text-primary">아이디 : </strong>
+                        <input id="ranking_username_textbox" type="text" />
+                    </div>
+                    <div style="display: flex; height: 4em; flex-flow: row; justify-content: center; align-items: center; flex-wrap: nowrap;">
+                        <a id="ranking_submit" type="button" class="btn text-primary btn-primary">랭킹 등록하기!</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        axios.get('/sudoku/make')
+            .then(make_sudoku);
+
+        let timer_textbox = document.querySelector("#timer-box > h3");
+        var elapsed_time = 0;
+
+        $('#success-toast-container').hide();
+        $('#fail-toast-container').hide();
+
+        let timer = setInterval(function(){
+            elapsed_time+=1;
+
+            let seconds = parseInt(elapsed_time%60);
+            let minutes = parseInt((elapsed_time%3600)/60);
+            let hours = parseInt(elapsed_time/3600);
+
+            seconds = seconds.toString().padStart(2, '0');
+            minutes = minutes.toString().padStart(2, '0');
+            hours = hours.toString().padStart(2, '0');
+
+            timer_textbox.innerText = `${hours}:${minutes}:${seconds}`;
+
+        },1000);
+
+        let button_flexbox = document.querySelector("#submit-btn");
+        let ranking_button = document.querySelector("#ranking_submit");
+
+        button_flexbox.addEventListener("click",function(){
+            axios.post('/sudoku/check',
+                get_sudoku_data()
+            ).then(process_result);
+        });
+
+        ranking_button.addEventListener("click", function(){
+            let name = document.querySelector("#ranking_username_textbox").value;
+            submit_ranking(name);
+        });
+
+        function get_sudoku_data() {
+            let data = {
+                'elapsed_time':elapsed_time,
+            }
+
+            let grid_container = document.querySelector(".gridbox-container");
+            let board = [];
+
+            for(let i=0;i<9;i++){
+                for(let j=0;j<9;j++){
+                    let k = i*9 + j;
+                    let cell = grid_container.children[k];
+                    if(k%9==0){ 
+                        board.push([]);
+                    }
+                    board[i].push(Number(cell.innerText));
+                }
+            }
+
+            data['puzzle'] = board;
+
+            return data;
+        }
+
+        function process_result(response) {
+            let status = response.data.status;
+            clearInterval(timer);
+
+            if(status == 'clear'){
+                $('#success-toast-container').show();
+                $('#success-toast').toast('show');
+
+            }else{
+                $('#fail-toast-container').show();
+                $('#fail-toast').toast('show');
+            }
+        }
+
+        function submit_ranking(name){
+            axios.post("/sudoku/ranking/register",{
+                'name' : name
+            }).then(function(response){
+                let status = response.data;
+                if(status == 'success'){
+                    location.href = "/ranking";
+                }
+                $('#success-toast-container').hide();
+            });
+        }
+
+        function make_sudoku(response){
+            let board = response.data.board;
+            let grid_container = document.querySelector(".gridbox-container");
+            for(let i=0;i<9;i++){
+                for(let j=0;j<9;j++){
+                    let node = document.createElement("div");
+                    node.classList.add("gridbox-item")
+
+                    if(i!=0 && i%3==2)
+                        node.classList.add("cell-padding-bottom");
+
+                    if(j!=0 && j%3==0)
+                        node.classList.add("cell-padding-left");
+
+                    if(board[i][j]==0){      
+                        node.contentEditable = true;
+                        node.innerText = "";
+                        node.classList.add("input-item-decorator");
+                    }else{
+                        node.innerText = board[i][j].toString();
+                        node.classList.add("fixed-item-decorator");
+                    }
+                    grid_container.appendChild(node);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
